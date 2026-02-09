@@ -1,0 +1,44 @@
+{
+  "name": "admin-panel-backend",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/app.server.js",
+  "scripts": {
+    "start": "node src/app.server.js",
+    "dev": "node --watch src/app.server.js",
+    "test": "vitest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "db:migrate": "node src/db/migrate.db.js",
+    "db:migrate:undo": "node src/db/migrate.db.js --undo"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "docxtemplater": "^3.49.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "joi": "^17.13.1",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.2",
+    "pg": "^8.11.5",
+    "pg-hstore": "^2.3.4",
+    "pizzip": "^3.1.7",
+    "prom-client": "^15.1.2",
+    "sequelize": "^6.37.3",
+    "umzug": "^3.8.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
+    "prettier": "^3.2.5",
+    "supertest": "^7.0.0",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

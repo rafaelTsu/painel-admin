@@ -1,0 +1,987 @@
+openapi: 3.0.3
+info:
+  title: Admin Panel System API
+  version: 0.1.0
+  description: |
+    API contracts for the Administrative Panel system.
+    
+    Notes:
+    - Only `administrator` and `attorney` may access panel routes (FR-003).
+    - Attorneys are strictly scoped to their group memberships (FR-006).
+    - Evaluators are denied and attempts are audited (FR-004, FR-039).
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+  - name: Users
+  - name: Groups
+  - name: Variables
+  - name: Categories
+  - name: Templates
+  - name: Simulations
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+        '401':
+          description: Not authenticated
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      description: |
+        Issues a new access token using a refresh token.
+        Refresh token is expected to be sent as an httpOnly cookie.
+      responses:
+        '200':
+          description: Refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '401':
+          description: Not authenticated
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      description: Clears refresh token cookie / invalidates refresh token.
+      responses:
+        '204':
+          description: Logged out
+
+  /users:
+    get:
+      tags: [Users]
+      summary: List users (admin only)
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUsers'
+    post:
+      tags: [Users]
+      summary: Create user (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/{userId}:
+    get:
+      tags: [Users]
+      summary: Get user (admin only)
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    patch:
+      tags: [Users]
+      summary: Update user (admin only)
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /groups:
+    get:
+      tags: [Groups]
+      summary: List groups (admin sees all; attorney sees memberships)
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Groups
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGroups'
+    post:
+      tags: [Groups]
+      summary: Create group (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroupRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+
+  /groups/{groupId}:
+    get:
+      tags: [Groups]
+      summary: Get group
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      responses:
+        '200':
+          description: Group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+    patch:
+      tags: [Groups]
+      summary: Update group (admin only)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGroupRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+    delete:
+      tags: [Groups]
+      summary: Delete group (admin only)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      responses:
+        '204':
+          description: Deleted
+
+  /groups/{groupId}/memberships:
+    post:
+      tags: [Groups]
+      summary: Add attorney to group (admin only)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddMembershipRequest'
+      responses:
+        '201':
+          description: Membership created
+
+  /groups/{groupId}/memberships/{userId}:
+    delete:
+      tags: [Groups]
+      summary: Remove attorney from group (admin only)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '204':
+          description: Removed
+
+  /groups/{groupId}/variables:
+    get:
+      tags: [Variables]
+      summary: List variables (group-scoped)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Variables
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVariables'
+    post:
+      tags: [Variables]
+      summary: Create variable
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVariableRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Variable'
+
+  /groups/{groupId}/variables/{variableId}:
+    get:
+      tags: [Variables]
+      summary: Get variable (group-scoped)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/VariableId'
+      responses:
+        '200':
+          description: Variable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Variable'
+    patch:
+      tags: [Variables]
+      summary: Update variable (group-scoped)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/VariableId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVariableRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Variable'
+    delete:
+      tags: [Variables]
+      summary: Deactivate variable (group-scoped)
+      description: |
+        For safety, variable deletion is treated as deactivation.
+        Implementations SHOULD prevent deactivation when referenced by existing template versions.
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/VariableId'
+      responses:
+        '204':
+          description: Deactivated
+
+  /groups/{groupId}/categories:
+    get:
+      tags: [Categories]
+      summary: List categories (group-scoped)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategories'
+    post:
+      tags: [Categories]
+      summary: Create category
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategoryRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+
+  /groups/{groupId}/categories/{categoryId}:
+    get:
+      tags: [Categories]
+      summary: Get category (group-scoped)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '200':
+          description: Category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+    patch:
+      tags: [Categories]
+      summary: Update category (group-scoped)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoryRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+    delete:
+      tags: [Categories]
+      summary: Delete category (group-scoped)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '204':
+          description: Deleted
+
+  /groups/{groupId}/categories/{categoryId}/variables:
+    post:
+      tags: [Categories]
+      summary: Add variable to category
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCategoryVariableRequest'
+      responses:
+        '201':
+          description: Added
+
+  /groups/{groupId}/categories/{categoryId}/variables/{variableId}:
+    delete:
+      tags: [Categories]
+      summary: Remove variable from category
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/CategoryId'
+        - $ref: '#/components/parameters/VariableId'
+      responses:
+        '204':
+          description: Removed
+
+  /groups/{groupId}/templates:
+    get:
+      tags: [Templates]
+      summary: List templates (group-scoped)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTemplates'
+    post:
+      tags: [Templates]
+      summary: Create template (metadata only)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTemplateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+
+  /groups/{groupId}/templates/{templateId}:
+    get:
+      tags: [Templates]
+      summary: Get template (group-scoped)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/TemplateId'
+      responses:
+        '200':
+          description: Template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+    patch:
+      tags: [Templates]
+      summary: Update template metadata (group-scoped)
+      description: |
+        Updates name/description only. Template content changes are handled via version upload.
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/TemplateId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTemplateRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+    delete:
+      tags: [Templates]
+      summary: Delete template (group-scoped)
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - $ref: '#/components/parameters/TemplateId'
+      responses:
+        '204':
+          description: Deleted
+
+  /templates/{templateId}/versions:
+    get:
+      tags: [Templates]
+      summary: List template versions
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      responses:
+        '200':
+          description: Versions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateVersionList'
+
+  /templates/{templateId}/versions/upload-docx:
+    post:
+      tags: [Templates]
+      summary: Upload DOCX to create a new version
+      description: Creates a new immutable version storing the uploaded DOCX and metadata.
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                changeNote:
+                  type: string
+                referencedVariableKeys:
+                  type: array
+                  items: { type: string }
+                logicDefinition:
+                  description: JSON logic definition used to validate deterministic conditional rules.
+                  type: string
+      responses:
+        '201':
+          description: Version created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateVersion'
+
+  /templates/{templateId}/versions/{versionId}/restore:
+    post:
+      tags: [Templates]
+      summary: Restore a prior version (creates a new version)
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+        - $ref: '#/components/parameters/VersionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                changeNote:
+                  type: string
+              required: [changeNote]
+      responses:
+        '201':
+          description: Restored as a new version
+
+  /templates/{templateId}/versions/{versionId}/simulations:
+    post:
+      tags: [Simulations]
+      summary: Run a simulation for a specific template version
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+        - $ref: '#/components/parameters/VersionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSimulationRequest'
+      responses:
+        '201':
+          description: Simulation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationRun'
+
+  /simulations/{simulationRunId}:
+    get:
+      tags: [Simulations]
+      summary: Get simulation run
+      parameters:
+        - $ref: '#/components/parameters/SimulationRunId'
+      responses:
+        '200':
+          description: Simulation run
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationRun'
+
+  /simulations/{simulationRunId}/documents/{documentId}/download:
+    get:
+      tags: [Simulations]
+      summary: Download generated document
+      parameters:
+        - $ref: '#/components/parameters/SimulationRunId'
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: File download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /templates/{templateId}/export:
+    get:
+      tags: [Templates]
+      summary: Export template package (ZIP)
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+      responses:
+        '200':
+          description: Template export ZIP
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+
+  /groups/{groupId}/templates/import:
+    post:
+      tags: [Templates]
+      summary: Import template package (ZIP) into a group
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                conflictStrategy:
+                  $ref: '#/components/schemas/ImportConflictStrategy'
+                renamePrefix:
+                  type: string
+                  description: Used only when conflictStrategy is rename.
+              required: [file, conflictStrategy]
+      responses:
+        '201':
+          description: Import completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResult'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+    Offset:
+      name: offset
+      in: query
+      schema: { type: integer, minimum: 0, default: 0 }
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    GroupId:
+      name: groupId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    VariableId:
+      name: variableId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CategoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    TemplateId:
+      name: templateId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    VersionId:
+      name: versionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    SimulationRunId:
+      name: simulationRunId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    DocumentId:
+      name: documentId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+      required: [email, password]
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        user: { $ref: '#/components/schemas/User' }
+      required: [accessToken, user]
+
+    RefreshResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+      required: [accessToken]
+
+    MeResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+      required: [user]
+
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        role: { type: string, enum: [administrator, attorney, evaluator] }
+        isActive: { type: boolean }
+      required: [id, email, role, isActive]
+
+    PaginatedUsers:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/User' }
+        limit: { type: integer }
+        offset: { type: integer }
+        total: { type: integer }
+      required: [items, limit, offset, total]
+
+    CreateUserRequest:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        role: { type: string, enum: [administrator, attorney, evaluator] }
+      required: [email, password, role]
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        role: { type: string, enum: [administrator, attorney, evaluator] }
+        isActive: { type: boolean }
+
+    Group:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string, nullable: true }
+      required: [id, name]
+
+    PaginatedGroups:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Group' }
+        limit: { type: integer }
+        offset: { type: integer }
+        total: { type: integer }
+      required: [items, limit, offset, total]
+
+    CreateGroupRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+      required: [name]
+
+    UpdateGroupRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+
+    AddMembershipRequest:
+      type: object
+      properties:
+        userId: { type: string, format: uuid }
+      required: [userId]
+
+    Variable:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        key: { type: string }
+        label: { type: string }
+        type: { type: string, enum: [boolean, text] }
+        isActive: { type: boolean }
+      required: [id, key, label, type, isActive]
+
+    PaginatedVariables:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Variable' }
+        limit: { type: integer }
+        offset: { type: integer }
+        total: { type: integer }
+      required: [items, limit, offset, total]
+
+    CreateVariableRequest:
+      type: object
+      properties:
+        key: { type: string, minLength: 1 }
+        label: { type: string, minLength: 1 }
+        type: { type: string, enum: [boolean, text] }
+        isActive: { type: boolean }
+      required: [key, label, type]
+
+    UpdateVariableRequest:
+      type: object
+      properties:
+        label: { type: string, minLength: 1 }
+        type: { type: string, enum: [boolean, text] }
+        isActive: { type: boolean }
+
+    Category:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string, nullable: true }
+      required: [id, name]
+
+    PaginatedCategories:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Category' }
+        limit: { type: integer }
+        offset: { type: integer }
+        total: { type: integer }
+      required: [items, limit, offset, total]
+
+    CreateCategoryRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+      required: [name]
+
+    UpdateCategoryRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+
+    AddCategoryVariableRequest:
+      type: object
+      properties:
+        variableId: { type: string, format: uuid }
+      required: [variableId]
+
+    Template:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        groupId: { type: string, format: uuid }
+      required: [id, name, groupId]
+
+    PaginatedTemplates:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Template' }
+        limit: { type: integer }
+        offset: { type: integer }
+        total: { type: integer }
+      required: [items, limit, offset, total]
+
+    CreateTemplateRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+      required: [name]
+
+    UpdateTemplateRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+
+    TemplateVersion:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        templateId: { type: string, format: uuid }
+        versionNumber: { type: integer }
+        changeNote: { type: string }
+        createdAt: { type: string, format: date-time }
+      required: [id, templateId, versionNumber, changeNote, createdAt]
+
+    TemplateVersionList:
+      type: array
+      items: { $ref: '#/components/schemas/TemplateVersion' }
+
+    CreateSimulationRequest:
+      type: object
+      properties:
+        outputFormat: { type: string, enum: [docx, pdf] }
+        inputValues:
+          type: object
+          additionalProperties: true
+      required: [outputFormat, inputValues]
+
+    SimulationRun:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [queued, running, succeeded, failed] }
+        outputFormat: { type: string, enum: [docx, pdf] }
+        createdAt: { type: string, format: date-time }
+      required: [id, status, outputFormat, createdAt]
+
+    ImportConflictStrategy:
+      type: string
+      enum: [create_new, replace_by_new_version, rename]
+
+    ImportResult:
+      type: object
+      properties:
+        importedTemplateId: { type: string, format: uuid }
+        createdVariablesCount: { type: integer }
+        createdCategoriesCount: { type: integer }
+        warnings:
+          type: array
+          items: { type: string }
+      required: [importedTemplateId, createdVariablesCount, createdCategoriesCount, warnings]
