@@ -25,6 +25,17 @@ export const routes = [
         component: () => import('../pages/group.page.vue') 
       },
       { 
+        path: 'groups/:groupId/variables', 
+        name: 'Variables', 
+        component: () => import('../pages/variable.page.vue') 
+      },
+      // Global Variable Library
+      { 
+        path: 'variables', 
+        name: 'GlobalVariables', 
+        component: () => import('../pages/variable.page.vue') 
+      },
+      { 
         path: 'groups/:groupId/templates', 
         name: 'Templates', 
         component: () => import('../pages/template.page.vue') 

@@ -11,7 +11,7 @@ Category.init({
   },
   groupId: {
     type: DataTypes.UUID,
-    allowNull: false,
+    allowNull: true,
   },
   name: {
     type: DataTypes.STRING,

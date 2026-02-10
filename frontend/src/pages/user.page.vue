@@ -13,14 +13,14 @@
         :loading="userStore.loading"
         hover
       >
-        <template v-slot:item.active="{ item }">
+        <template v-slot:item.isActive="{ item }">
           <v-chip
-            :color="item.active ? 'success' : 'error'"
+            :color="item.isActive ? 'success' : 'error'"
             size="small"
             label
             variant="flat"
           >
-            {{ item.active ? 'Active' : 'Inactive' }}
+            {{ item.isActive ? 'Active' : 'Inactive' }}
           </v-chip>
         </template>
         
@@ -67,7 +67,7 @@ export default {
         { title: 'Name', key: 'name', align: 'start' },
         { title: 'Email', key: 'email', align: 'start' },
         { title: 'Role', key: 'role', align: 'start' },
-        { title: 'Status', key: 'active', align: 'center' },
+        { title: 'Status', key: 'isActive', align: 'center' },
         { title: 'Actions', key: 'actions', align: 'end', sortable: false },
       ],
       dialog: false,

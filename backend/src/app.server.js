@@ -15,6 +15,7 @@ import { variableRouter } from './routes/variable.router.js';
 import { categoryRouter } from './routes/category.router.js';
 import { templateRouter } from './routes/template.router.js';
 import simulationRouter from './routes/simulation.router.js';
+import { globalVariableRouter } from './routes/global-variable.router.js';
 import { authenticate } from './middlewares/auth.middleware.js';
 import { requireGroupMembership } from './middlewares/require-group-membership.middleware.js';
 
@@ -41,6 +42,7 @@ app.use('/api', healthRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/groups', groupRouter);
+app.use('/api/variables', authenticate, globalVariableRouter); // Global Library
 
 // Group scoped resources
 // /api/groups/:groupId/variables

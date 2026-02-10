@@ -16,7 +16,7 @@ export const useSimulationStore = defineStore('simulation', {
             this.currentRun = null;
             try {
                 const response = await simulationService.createRun(groupId, templateId, versionId, inputValues, outputFormat);
-                this.currentRun = response.data;
+                this.currentRun = response; // response data is already unwrapped by api.service
                 this.startPolling(groupId, this.currentRun.id);
                 return this.currentRun;
             } catch (error) {
@@ -61,7 +61,7 @@ export const useSimulationStore = defineStore('simulation', {
         async downloadResult(groupId, simulationId, fileName) {
             try {
                 const response = await simulationService.download(groupId, simulationId);
-                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const url = window.URL.createObjectURL(response);
                 const link = document.createElement('a');
                 link.href = url;
                 link.setAttribute('download', fileName);

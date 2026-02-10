@@ -49,6 +49,14 @@ export const useTemplateStore = defineStore('template', {
         await templateService.createVersion(groupId, templateId, formData);
         await this.fetchVersions(groupId, templateId);
     },
+    async createVersionFromHtml(groupId, templateId, html, changeNote) {
+        await templateService.createVersionFromHtml(groupId, templateId, html, changeNote);
+        await this.fetchVersions(groupId, templateId);
+    },
+    async getVersionHtml(groupId, templateId, versionId) {
+        const res = await templateService.getVersionHtml(groupId, templateId, versionId);
+        return res;
+    },
     async importTemplate(groupId, file) {
         this.loading = true;
         try {

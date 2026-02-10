@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "db:migrate": "node src/db/migrate.db.js",
-    "db:migrate:undo": "node src/db/migrate.db.js --undo"
+    "db:migrate:undo": "node src/db/migrate.db.js --undo",
+    "db:seed": "node src/db/seed.db.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -20,8 +21,10 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "helmet": "^7.1.0",
+    "html-to-docx": "^1.8.0",
     "joi": "^17.13.1",
     "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.11.0",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
     "pg": "^8.11.5",

@@ -16,6 +16,8 @@ router.get('/:id', templateController.getTemplate);
 router.get('/:id/export', templateController.exportTemplate);
 router.post('/:id/versions', upload.single('file'), templateController.createVersion);
 router.get('/:id/versions', templateController.listVersions);
+router.get('/:id/versions/:versionId/html', templateController.getVersionHtml);
+router.post('/:id/versions/html', templateController.createVersionFromHtml);
 router.post('/:id/versions/:versionId/simulate', simulationController.createRun);
 
 export const templateRouter = router;

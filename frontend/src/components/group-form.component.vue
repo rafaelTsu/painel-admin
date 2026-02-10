@@ -74,7 +74,13 @@ export default {
   methods: {
     save() {
       if (this.valid) {
-        this.$emit('save', { ...this.formData });
+        // Only allow specific fields to be sent
+        // Exclude id, createdAt, updatedAt etc.
+        const payload = {
+          name: this.formData.name,
+          description: this.formData.description
+        };
+        this.$emit('save', payload);
       }
     },
   },

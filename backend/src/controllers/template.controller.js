@@ -72,6 +72,29 @@ export const exportTemplate = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+export const getVersionHtml = async (req, res, next) => {
+    try {
+        const { groupId, id, versionId } = req.params;
+        const html = await templateService.getVersionHtml(id, versionId, groupId);
+        res.json({ html });
+    } catch (e) { next(e); }
+};
+
+export const createVersionFromHtml = async (req, res, next) => {
+    try {
+        const { groupId, id } = req.params;
+        const { html, changeNote } = req.body;
+        
+        if (!html) throw new BadRequestError('HTML content required');
+
+        const version = await templateService.createVersionFromHtml(id, groupId, req.user.id, html, changeNote);
+        
+        await req.audit({ action: 'template.version.create.html', targetType: 'templateVersion', targetId: version.id, groupId, outcome: 'success' });
+        
+        res.status(201).json(version);
+    } catch (e) { next(e); }
+};
+
 export const importTemplate = async (req, res, next) => {
     try {
         const { groupId } = req.params;

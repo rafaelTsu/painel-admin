@@ -15,12 +15,15 @@
         <template v-slot:item.createdAt="{ item }">
             {{ new Date(item.createdAt).toLocaleString() }}
         </template>
+        <template v-slot:item.actions="{ item }">
+            <v-btn icon="mdi-pencil" size="small" variant="text" @click="$emit('edit', item)" title="Edit in Web Editor" color="primary"></v-btn>
+        </template>
     </v-data-table>
   </v-card>
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 
 const props = defineProps({
     versions: {
@@ -33,10 +36,13 @@ const props = defineProps({
     }
 });
 
+const emit = defineEmits(['edit']);
+
 const headers = [
     { title: 'Version', key: 'versionNumber' },
     { title: 'Change Note', key: 'changeNote' },
     { title: 'CreatedAt', key: 'createdAt' },
-    { title: 'Variables', key: 'referencedVariableKeys' }
+    { title: 'Variables', key: 'referencedVariableKeys' },
+    { title: 'Actions', key: 'actions', sortable: false }
 ];
 </script>

@@ -5,7 +5,8 @@ export const createVariableSchema = Joi.object({
   label: Joi.string().required(),
   type: Joi.string().valid('boolean', 'text').required(),
   description: Joi.string().allow(null, '').optional(),
-  isActive: Joi.boolean().optional()
+  isActive: Joi.boolean().optional(),
+  groupId: Joi.string().uuid().allow(null).optional() // to allow creating global variables
 });
 
 export const updateVariableSchema = Joi.object({

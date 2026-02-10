@@ -19,7 +19,7 @@ export const listGroups = async (user, { page = 1, limit = 10, search, isActive 
     if (user.role === 'attorney') {
         include.push({
             model: User,
-            as: 'members',
+            as: 'users',
             where: { id: user.id },
             attributes: [], // We just want to filter
             through: { attributes: [] }
@@ -121,12 +121,12 @@ export const listMembers = async (groupId) => {
          include: [
              {
                  model: User,
-                 as: 'members',
+                 as: 'users',
                  attributes: ['id', 'name', 'email', 'role'],
                  through: { attributes: [] }
              }
          ]
      });
      if (!group) throw new NotFoundError('Group not found');
-     return group.members;
+     return group.users;
 };

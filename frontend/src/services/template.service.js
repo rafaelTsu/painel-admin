@@ -20,6 +20,12 @@ export const templateService = {
   async listVersions(groupId, templateId) {
     return api.get(`/groups/${groupId}/templates/${templateId}/versions`);
   },
+  async getVersionHtml(groupId, templateId, versionId) {
+    return api.get(`/groups/${groupId}/templates/${templateId}/versions/${versionId}/html`);
+  },
+  async createVersionFromHtml(groupId, templateId, html, changeNote) {
+    return api.post(`/groups/${groupId}/templates/${templateId}/versions/html`, { html, changeNote });
+  },
   async export(groupId, templateId) {
     return api.get(`/groups/${groupId}/templates/${templateId}/export`, { responseType: 'blob' });
   },

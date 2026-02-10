@@ -1,6 +1,6 @@
 
 import { Template, TemplateVersion, Variable, Category, CategoryVariable, Group } from '../models/index.model.js';
-import { storageService, saveFile, getFile } from './storage.service.js'; // Ensure correct import
+import { saveFile, getFile } from './storage.service.js';
 import { NotFoundError, BadRequestError } from '../shared/errors.util.js';
 import PizZip from 'pizzip';
 import { Op } from 'sequelize';

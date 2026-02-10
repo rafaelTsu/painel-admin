@@ -84,10 +84,11 @@
 </template>
 
 <script>
-import templateService from '@/services/template.service';
-import variableService from '@/services/variable.service';
+import { templateService } from '@/services/template.service';
+import { variableService } from '@/services/variable.service';
 import { useSimulationStore } from '@/stores/simulation.store';
 import { mapState, mapActions } from 'pinia';
+
 
 export default {
     props: ['groupId', 'templateId'],
@@ -127,16 +128,16 @@ export default {
         this.reset(); // reset store
         try {
             const [tpl, vers, vars] = await Promise.all([
-                templateService.getTemplate(this.groupId, this.templateId),
-                templateService.getVersions(this.groupId, this.templateId),
-                variableService.getVariables(this.groupId) // Optimizable? Yes, but MVP.
+                templateService.get(this.groupId, this.templateId),
+                templateService.listVersions(this.groupId, this.templateId),
+                variableService.list(this.groupId) // Optimizable? Yes, but MVP.
             ]);
-            this.template = tpl.data;
-            this.versions = vers.data; // array of objects
-            this.variables = vars.data;
+            this.template = tpl;
+            this.versions = vers; // array
+            this.variables = vars.data || []; // paginated result
             
-            if (this.versions.length > 0) {
-                this.selectedVersionId = this.versions[0]; // Latest
+            if (this.versions && this.versions.length > 0) {
+                this.selectedVersionId = this.versions[0]; // Select latest (object due to return-object)
             }
         } catch (e) {
             console.error(e);

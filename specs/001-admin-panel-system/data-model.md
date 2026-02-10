@@ -51,7 +51,7 @@ Rules
 ## 4) Variable
 Fields
 - `id` (uuid, pk)
-- `groupId` (uuid, fk → Group.id, required)
+- `groupId` (uuid, fk → Group.id, nullable) — Null indicates a global library variable
 - `key` (string, required) — stable reference name used by templates
 - `label` (string, required)
 - `type` (enum: `boolean` | `text`, required) — FR-018 (extendable)
@@ -59,19 +59,39 @@ Fields
 - `description` (string, nullable)
 
 Constraints
-- Unique composite (`groupId`, `key`) to keep references stable.
+- Unique `key` system-wide.
 
 ## 5) Category
 Fields
 - `id` (uuid, pk)
-- `groupId` (uuid, fk → Group.id, required)
+- `groupId` (uuid, fk → Group.id, nullable) — Null indicates a global library category
 - `name` (string, required)
 - `description` (string, nullable)
 
 Constraints
-- Unique composite (`groupId`, `name`)
+- Unique `name` system-wide.
 
-## 6) CategoryVariable (join)
+## 6) GroupVariable (join)
+Purpose: Associate variables with groups (Many-to-Many) — FR-019
+
+Fields
+- `groupId` (uuid, fk → Group.id, required)
+- `variableId` (uuid, fk → Variable.id, required)
+
+Constraints
+- Unique composite (`groupId`, `variableId`)
+
+## 7) GroupCategory (join)
+Purpose: Associate categories with groups (Many-to-Many) — FR-022
+
+Fields
+- `groupId` (uuid, fk → Group.id, required)
+- `categoryId` (uuid, fk → Category.id, required)
+
+Constraints
+- Unique composite (`groupId`, `categoryId`)
+
+## 8) CategoryVariable (join)
 Fields
 - `categoryId` (uuid, fk → Category.id)
 - `variableId` (uuid, fk → Variable.id)
@@ -79,7 +99,7 @@ Fields
 Constraints
 - Unique composite (`categoryId`, `variableId`)
 
-## 7) Template
+## 9) Template
 Represents the mutable identity (name/ownership), while versions hold immutable content — FR-014..FR-030
 
 Fields
@@ -93,7 +113,7 @@ Fields
 Constraints
 - Unique composite (`groupId`, `name`)
 
-## 8) TemplateVersion
+## 10) TemplateVersion
 Immutable snapshot on every change — FR-026
 
 Fields
@@ -115,7 +135,7 @@ Rules
   - all referenced variable keys exist within `Template.groupId` — FR-025
   - logic is well-formed/deterministic (schema validation)
 
-## 9) SimulationRun
+## 11) SimulationRun
 Tracks a test execution of a template version — FR-031..FR-034
 
 Fields
@@ -131,7 +151,7 @@ Fields
 - `startedAt` (timestamp, nullable)
 - `finishedAt` (timestamp, nullable)
 
-## 10) GeneratedDocument
+## 12) GeneratedDocument
 Represents an output artifact downloadable by authorized users — FR-033, FR-038
 
 Fields
@@ -143,7 +163,7 @@ Fields
 - `byteSize` (int, required)
 - `sha256` (string, nullable)
 
-## 11) AuditEvent
+## 13) AuditEvent
 Append-only audit trail for critical actions — FR-039..FR-040
 
 Fields
@@ -162,7 +182,9 @@ Fields
 ## Relationships
 
 - User (1) — (N) GroupMembership — (1) Group
-- Group (1) — (N) Variable, Category, Template, SimulationRun
+- Group (1) — (N) Template, SimulationRun
+- Group (N) — (N) Variable via GroupVariable
+- Group (N) — (N) Category via GroupCategory
 - Category (N) — (N) Variable via CategoryVariable
 - Template (1) — (N) TemplateVersion
 - TemplateVersion (1) — (N) SimulationRun

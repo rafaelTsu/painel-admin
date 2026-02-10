@@ -100,9 +100,11 @@ As an authorized user, I can test a specific template version by running a simul
 
 **Variables (CRUD) and Types**
 
-- **FR-017**: System MUST allow administrators and authorized attorneys to create, view, update, and delete variables.
+- **FR-017**: System MUST allow administrators and authorized attorneys to create variables in a central library.
 - **FR-018**: System MUST support variable types sufficient for conditional logic and document generation, including at minimum boolean and text.
-- **FR-019**: System MUST allow variables to be organized so templates can reference them consistently over time.
+- **FR-019**: System MUST allow variables to be associated with one or more groups (Many-to-Many).
+- **FR-019a**: System MUST ensure variable keys are unique system-wide within the library.
+- **FR-019b**: System MUST auto-associate global variables with a group when they are used in a template uploaded to that group.
 
 Clarification (to satisfy edge cases safely):
 - “Delete” MUST be implemented as deactivation/disable by default (soft delete).
@@ -111,45 +113,52 @@ Clarification (to satisfy edge cases safely):
 
 **Categories (Sets of Variables)**
 
-- **FR-020**: System MUST allow administrators and authorized attorneys to create, view, update, and delete categories.
+- **FR-020**: System MUST allow administrators and authorized attorneys to create categories in a central library.
 - **FR-021**: System MUST allow categories to include one or more variables.
-- **FR-022**: System MUST allow template editing workflows to filter/select variables by category.
+- **FR-022**: System MUST allow categories to be associated with one or more groups (Many-to-Many).
+- **FR-022a**: System MUST allow template editing workflows to filter/select variables by category.
+
+**Template Editing (New)**
+
+- **FR-023**: System MUST allow authorized users to edit template content directly via a web-based editor.
+- **FR-023a**: System MUST allow "Round-trip" editing: Converting stored DOCX to HTML for editing, and saving HTML back to DOCX as a new version.
+- **FR-023b**: The web editor MUST support inserting variables and conditional blocks (nested conditionals) visually (including drag-and-drop from a categorized list) or via syntax macro.
 
 **Template Business Logic (Conditional + Nested Conditions)**
 
-- **FR-023**: System MUST support conditional inclusion of template text/content based on variable values.
-- **FR-024**: System MUST support nested conditional logic (conditions inside conditions) to reflect business rules.
-- **FR-025**: System MUST validate templates when saving changes (creating a new template version) so that:
+- **FR-024**: System MUST support conditional inclusion of template text/content based on variable values.
+- **FR-025**: System MUST support nested conditional logic (sections inside sections) to reflect complex business rules.
+- **FR-026**: System MUST validate templates when saving changes (creating a new template version) so that:
   - referenced variables exist and are accessible within the template’s group context
   - conditional rules are well-formed and deterministic
   - validation failures are shown with actionable error messages
 
 **Template Versioning**
 
-- **FR-026**: System MUST create a new immutable template version whenever a template is changed.
-- **FR-027**: System MUST preserve prior template versions so they remain viewable and can be used for simulation.
-- **FR-028**: System MUST record who made each version, when it was created, and a human-readable change note.
-- **FR-029**: System MUST allow authorized users to select a specific version for simulation.
-- **FR-030**: System MUST allow authorized users to restore (roll back) a prior version by creating a new version that matches the restored content.
+- **FR-027**: System MUST create a new immutable template version whenever a template is changed.
+- **FR-028**: System MUST preserve prior template versions so they remain viewable and can be used for simulation.
+- **FR-029**: System MUST record who made each version, when it was created, and a human-readable change note.
+- **FR-030**: System MUST allow authorized users to select a specific version for simulation.
+- **FR-031**: System MUST allow authorized users to restore (roll back) a prior version by creating a new version that matches the restored content.
 
 **Simulation (Test Run) and Output Files**
 
-- **FR-031**: System MUST allow authorized users to run a simulation for a specific template version by providing values for required variables.
-- **FR-032**: System MUST generate simulation outputs in DOCX or PDF format.
-- **FR-033**: System MUST make simulation outputs available for authorized download.
-- **FR-034**: System MUST record audit events for simulation runs and downloads, including success/failure.
+- **FR-032**: System MUST allow authorized users to run a simulation for a specific template version by providing values for required variables.
+- **FR-033**: System MUST generate simulation outputs in DOCX or PDF format.
+- **FR-034**: System MUST make simulation outputs available for authorized download.
+- **FR-035**: System MUST record audit events for simulation runs and downloads, including success/failure.
 
 **Import/Export**
 
-- **FR-035**: System MUST allow authorized users to export a template in a portable form that includes the template content and its associated variable/category definitions needed to use it elsewhere.
-- **FR-036**: System MUST allow authorized users to import an exported template into a selected target group.
-- **FR-037**: System MUST handle name/identifier conflicts during import using an explicit user choice (e.g., create new, replace by new version, or rename) and record the choice in the audit log.
-- **FR-038**: System MUST allow authorized users to export and download generated simulation files in DOCX or PDF format.
+- **FR-036**: System MUST allow authorized users to export a template in a portable form that includes the template content and its associated variable/category definitions needed to use it elsewhere.
+- **FR-037**: System MUST allow authorized users to import an exported template into a selected target group.
+- **FR-038**: System MUST handle name/identifier conflicts during import using an explicit user choice (e.g., create new, replace by new version, or rename) and record the choice in the audit log.
+- **FR-039**: System MUST allow authorized users to export and download generated simulation files in DOCX or PDF format.
 
 **Auditability (Cross-Cutting)**
 
-- **FR-039**: System MUST maintain an audit trail for security- and business-critical actions, including login attempts, authorization failures, CRUD operations for users/groups/templates/variables/categories, version changes, imports/exports, and simulation runs.
-- **FR-040**: Each audit event MUST include at minimum: actor identity, timestamp, action performed, target entity, group context (if applicable), and outcome (success/failure).
+- **FR-040**: System MUST maintain an audit trail for security- and business-critical actions, including login attempts, authorization failures, CRUD operations for users/groups/templates/variables/categories, version changes, imports/exports, and simulation runs.
+- **FR-041**: Each audit event MUST include at minimum: actor identity, timestamp, action performed, target entity, group context (if applicable), and outcome (success/failure).
 
 ### Key Entities *(include if feature involves data)*
 

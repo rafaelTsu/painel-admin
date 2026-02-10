@@ -15,11 +15,13 @@
         <template v-slot:item.actions="{ item }">
           <div v-if="isAdmin">
             <v-btn icon="mdi-account-multiple-plus" size="small" variant="text" color="info" @click="openMembers(item)" title="Manage Members"></v-btn>
+            <v-btn icon="mdi-variable" size="small" variant="text" color="default" @click="openVariables(item)" title="Manage Variables"></v-btn>
             <v-btn icon="mdi-file-document-multiple" size="small" variant="text" color="secondary" @click="openTemplates(item)" title="Manage Templates"></v-btn>
             <v-btn icon="mdi-pencil" size="small" variant="text" color="primary" @click="openEdit(item)" title="Edit"></v-btn>
           </div>
           <div v-else>
              <v-btn icon="mdi-account-supervisor" size="small" variant="text" @click="openMembers(item)" title="View Members"></v-btn>
+             <v-btn icon="mdi-variable" size="small" variant="text" color="default" @click="openVariables(item)" title="View Variables"></v-btn>
              <v-btn icon="mdi-file-document-multiple" size="small" variant="text" color="secondary" @click="openTemplates(item)" title="Manage Templates"></v-btn>
           </div>
         </template>
@@ -170,6 +172,10 @@ export default {
     openTemplates(group) {
       this.groupStore.selectGroup(group.id);
       this.$router.push({ name: 'Templates', params: { groupId: group.id } });
+    },
+    openVariables(group) {
+      this.groupStore.selectGroup(group.id);
+      this.$router.push({ name: 'Variables', params: { groupId: group.id } });
     },
     openEdit(group) {
       this.selectedGroup = group;

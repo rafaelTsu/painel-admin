@@ -29,6 +29,13 @@
           to="/groups"
           value="groups"
         ></v-list-item>
+
+        <v-list-item
+          prepend-icon="mdi-variable"
+          title="Variable Library"
+          to="/variables"
+          value="variables"
+        ></v-list-item>
       </v-list>
 
       <template v-slot:append>

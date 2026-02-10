@@ -10,6 +10,7 @@ const schema = Joi.object({
   JWT_ACCESS_SECRET: Joi.string().required(),
   JWT_REFRESH_SECRET: Joi.string().required(),
   FILES_BASE_PATH: Joi.string().required(),
+  CORS_ORIGIN: Joi.string().default('http://localhost:3000'),
 }).unknown();
 
 const { error, value } = schema.validate(process.env, { abortEarly: false });

@@ -30,8 +30,7 @@
 - [x] No implementation details leak into specification
 
 ## Notes
-
-- Items marked incomplete require spec updates before `/speckit.clarify` or `/speckit.plan`
+- Updated to reflect global variable architecture, nested conditions, and web editor capabilities.
 
 Validation notes (2026-02-09):
 - Removed leftover template placeholder text/comments from the spec.

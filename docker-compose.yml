@@ -23,6 +23,7 @@ services:
       JWT_ACCESS_SECRET: dev-secret-access
       JWT_REFRESH_SECRET: dev-secret-refresh
       FILES_BASE_PATH: /app/files
+      CORS_ORIGIN: http://localhost:3000
     depends_on:
       - db
     volumes:

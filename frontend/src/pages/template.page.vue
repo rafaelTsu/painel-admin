@@ -60,11 +60,12 @@
 import { ref, onMounted } from 'vue';
 import { useTemplateStore } from '@/stores/template.store';
 import { useGroupStore } from '@/stores/group.store';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const templateStore = useTemplateStore();
 const groupStore = useGroupStore();
 const router = useRouter();
+const route = useRoute();
 
 const dialog = ref(false);
 const importDialog = ref(false);
@@ -80,8 +81,15 @@ const headers = [
 ];
 
 onMounted(() => {
-    if (groupStore.selectedGroup) {
-        templateStore.fetchTemplates(groupStore.selectedGroup.id);
+    // If we have a groupId in the route params, prefer it (handles page refresh)
+    const groupId = route.params.groupId || groupStore.selectedGroup?.id;
+    
+    if (groupId) {
+        // Ensure store is synced if using route param
+        if (route.params.groupId && groupStore.selectedGroupId !== route.params.groupId) {
+            groupStore.selectGroup(route.params.groupId);
+        }
+        templateStore.fetchTemplates(groupId);
     }
 });
 
@@ -93,11 +101,13 @@ const openCreate = () => {
 
 const openEditor = (item) => {
     // Navigate to template editor
-    router.push({ name: 'TemplateEditor', params: { groupId: groupStore.selectedGroup.id, templateId: item.id } });
+    const groupId = route.params.groupId || groupStore.selectedGroup.id;
+    router.push({ name: 'TemplateEditor', params: { groupId, templateId: item.id } });
 };
 
 const openSimulate = (item) => {
-   router.push({ name: 'Simulation', params: { groupId: groupStore.selectedGroup.id, templateId: item.id } });
+   const groupId = route.params.groupId || groupStore.selectedGroup.id;
+   router.push({ name: 'Simulation', params: { groupId, templateId: item.id } });
 };
 
 const openImport = () => { importDialog.value = true; importFile.value = null; };
@@ -105,16 +115,18 @@ const openImport = () => { importDialog.value = true; importFile.value = null; }
 const confirmImport = async () => {
     if (!importFile.value) return;
     const file = Array.isArray(importFile.value) ? importFile.value[0] : importFile.value;
-    if (file && groupStore.selectedGroup) {
-        await templateStore.importTemplate(groupStore.selectedGroup.id, file);
+    const groupId = route.params.groupId || groupStore.selectedGroup?.id;
+    if (file && groupId) {
+        await templateStore.importTemplate(groupId, file);
         importDialog.value = false;
     }
 };
 
 const downloadExport = async (item) => {
-    if (groupStore.selectedGroup) {
-        const res = await templateStore.exportTemplate(groupStore.selectedGroup.id, item.id);
-        const url = window.URL.createObjectURL(new Blob([res.data]));
+    const groupId = route.params.groupId || groupStore.selectedGroup?.id;
+    if (groupId) {
+        const res = await templateStore.exportTemplate(groupId, item.id);
+        const url = window.URL.createObjectURL(res);
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', `template-${item.id}.zip`);
@@ -126,8 +138,9 @@ const downloadExport = async (item) => {
 
 const save = async () => {
     if (!form.value.name) return;
-    if (groupStore.selectedGroup) {
-        await templateStore.createTemplate(groupStore.selectedGroup.id, form.value);
+    const groupId = route.params.groupId || groupStore.selectedGroup?.id;
+    if (groupId) {
+        await templateStore.createTemplate(groupId, form.value);
         dialog.value = false;
     }
 };

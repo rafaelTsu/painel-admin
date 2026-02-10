@@ -5,6 +5,8 @@ import AuditEvent from './audit-event.model.js';
 import Variable from './variable.model.js';
 import Category from './category.model.js';
 import CategoryVariable from './category-variable.model.js';
+import GroupVariable from './group-variable.model.js';
+import GroupCategory from './group-category.model.js';
 import Template from './template.model.js';
 import TemplateVersion from './template-version.model.js';
 import SimulationRun from './simulation-run.model.js';
@@ -25,13 +27,13 @@ Group.belongsToMany(User, { through: Membership, foreignKey: 'groupId', as: 'use
 User.hasMany(AuditEvent, { foreignKey: 'actorUserId' });
 AuditEvent.belongsTo(User, { foreignKey: 'actorUserId' });
 
-// Variable
-Group.hasMany(Variable, { foreignKey: 'groupId', as: 'variables' });
-Variable.belongsTo(Group, { foreignKey: 'groupId', as: 'group' });
+// Variable (Updated to Many-to-Many)
+Group.belongsToMany(Variable, { through: GroupVariable, foreignKey: 'groupId', as: 'variables' });
+Variable.belongsToMany(Group, { through: GroupVariable, foreignKey: 'variableId', as: 'groups' });
 
-// Category
-Group.hasMany(Category, { foreignKey: 'groupId', as: 'categories' });
-Category.belongsTo(Group, { foreignKey: 'groupId', as: 'group' });
+// Category (Updated to Many-to-Many)
+Group.belongsToMany(Category, { through: GroupCategory, foreignKey: 'groupId', as: 'categories' });
+Category.belongsToMany(Group, { through: GroupCategory, foreignKey: 'categoryId', as: 'groups' });
 
 // Category <-> Variable
 Category.belongsToMany(Variable, { through: CategoryVariable, foreignKey: 'categoryId', otherKey: 'variableId', as: 'variables' });
@@ -74,6 +76,8 @@ export {
   Variable,
   Category,
   CategoryVariable,
+  GroupVariable,
+  GroupCategory,
   Template,
   TemplateVersion,
   SimulationRun,

@@ -10,7 +10,13 @@ export const useVariableStore = defineStore('variable', {
     async fetchVariables(groupId, params) {
       this.loading = true;
       try {
-        const res = await variableService.list(groupId, params);
+        let res;
+        if (!groupId) {
+             res = await variableService.listAll(params);
+        } else {
+             res = await variableService.list(groupId, params);
+        }
+
         if (res.data) {
              this.variables = res.data;
         } else {
@@ -21,12 +27,22 @@ export const useVariableStore = defineStore('variable', {
       }
     },
     async createVariable(groupId, data) {
-        await variableService.create(groupId, data);
+        if (!groupId) {
+            await variableService.createGlobal(data);
+        } else {
+            await variableService.create(groupId, data);
+        }
         await this.fetchVariables(groupId);
     },
     async updateVariable(groupId, id, data) {
         await variableService.update(groupId, id, data);
         await this.fetchVariables(groupId);
+    },
+    async associateVariable(variableId, groupId) {
+        await variableService.associate(variableId, groupId);
+    },
+    async dissociateVariable(variableId, groupId) {
+        await variableService.dissociate(variableId, groupId);
     }
   }
 });

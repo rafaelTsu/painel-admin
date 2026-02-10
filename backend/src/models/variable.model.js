@@ -11,7 +11,7 @@ Variable.init({
   },
   groupId: {
     type: DataTypes.UUID,
-    allowNull: false,
+    allowNull: true,
   },
   key: {
     type: DataTypes.STRING,

@@ -48,7 +48,7 @@
 
         <v-checkbox
           v-if="isEdit"
-          v-model="formData.active"
+          v-model="formData.isActive"
           label="Active Account"
           color="primary"
           hide-details
@@ -82,7 +82,7 @@ export default {
         email: '',
         password: '',
         role: 'attorney',
-        active: true,
+        isActive: true,
       },
       roles: ['administrator', 'attorney', 'evaluator'],
       requiredRules: [v => !!v || 'Field is required'],
@@ -113,7 +113,7 @@ export default {
             email: '',
             password: '',
             role: 'attorney',
-            active: true,
+            isActive: true,
           };
         }
       },

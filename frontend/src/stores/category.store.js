@@ -30,7 +30,6 @@ export const useCategoryStore = defineStore('category', {
     },
     async assignVariables(groupId, categoryId, variableIds) {
         await categoryService.assignVariables(groupId, categoryId, variableIds);
-        // Refresh? if needed
         await this.fetchCategories(groupId, { includeVariables: true });
     }
   }

@@ -14,11 +14,17 @@ class DocxRenderService {
         const doc = new Docxtemplater(zip, {
             paragraphLoop: true,
             linebreaks: true,
+            delimiters: { start: '{{', end: '}}' },
+            nullGetter: (part) => `[MISSING: ${part.value}]`
         });
 
         try {
             // Render the document
             doc.render(data);
+            return zip.generate({
+                type: 'nodebuffer',
+                compression: 'DEFLATE',
+            });
         } catch (error) {
             // Catch compilation errors (e.g., malformed template)
             const e = {

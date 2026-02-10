@@ -56,7 +56,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MeResponse'
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      description: Returns a new access token using the httpOnly refresh token cookie.
+      responses:
+        '200':
+          description: New access token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
         '401':
+          description: Invalid or missing refresh token        '401':
           description: Not authenticated
 
   /auth/refresh:
@@ -245,6 +261,94 @@ paths:
       responses:
         '204':
           description: Removed
+
+  /variables:
+    get:
+      tags: [Variables]
+      summary: List all variables (Global Library)
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by key or label
+      responses:
+        '200':
+          description: Global Variables List
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVariables'
+    post:
+      tags: [Variables]
+      summary: Create global variable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVariableRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Variable'
+
+  /variables/{variableId}:
+    patch:
+      tags: [Variables]
+      summary: Update global variable
+      parameters:
+        - $ref: '#/components/parameters/VariableId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVariableRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Variable'
+
+  /variables/{variableId}/associate:
+    post:
+      tags: [Variables]
+      summary: Associate variable with a group
+      parameters:
+        - $ref: '#/components/parameters/VariableId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                groupId:
+                  type: string
+                  format: uuid
+              required: [groupId]
+      responses:
+        '200':
+          description: Associated
+
+  /variables/{variableId}/groups/{groupId}:
+    delete:
+      tags: [Variables]
+      summary: Dissociate variable from a group
+      parameters:
+        - $ref: '#/components/parameters/VariableId'
+        - $ref: '#/components/parameters/GroupId'
+      responses:
+        '204':
+          description: Dissociated
 
   /groups/{groupId}/variables:
     get:
@@ -835,6 +939,7 @@ components:
       type: object
       properties:
         id: { type: string, format: uuid }
+        groupId: { type: string, format: uuid, nullable: true }
         key: { type: string }
         label: { type: string }
         type: { type: string, enum: [boolean, text] }
@@ -855,6 +960,7 @@ components:
     CreateVariableRequest:
       type: object
       properties:
+        groupId: { type: string, format: uuid, nullable: true }
         key: { type: string, minLength: 1 }
         label: { type: string, minLength: 1 }
         type: { type: string, enum: [boolean, text] }
@@ -872,6 +978,7 @@ components:
       type: object
       properties:
         id: { type: string, format: uuid }
+        groupId: { type: string, format: uuid, nullable: true }
         name: { type: string }
         description: { type: string, nullable: true }
       required: [id, name]
