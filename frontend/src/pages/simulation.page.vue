@@ -3,7 +3,7 @@
   <v-container>
     <v-btn variant="text" :to="`/groups/${groupId}/templates`" class="mb-4" prepend-icon="mdi-arrow-left">Back to Templates</v-btn>
     
-    <v-card :loading="loading">
+    <v-card :loading="pageLoading || loading">
       <v-card-title>Run Simulation</v-card-title>
       <v-card-text v-if="template">
         <div class="text-h5 mb-2">{{ template.name }}</div>
@@ -100,7 +100,7 @@ export default {
             selectedVersionId: null, // this will hold the object due to return-object
             inputs: {},
             outputFormat: 'docx',
-            loading: false
+            pageLoading: false
         };
     },
     computed: {
@@ -124,7 +124,7 @@ export default {
         }
     },
     async mounted() {
-        this.loading = true;
+        this.pageLoading = true;
         this.reset(); // reset store
         try {
             const [tpl, vers, vars] = await Promise.all([
@@ -142,7 +142,7 @@ export default {
         } catch (e) {
             console.error(e);
         } finally {
-            this.loading = false;
+            this.pageLoading = false;
         }
     },
     methods: {

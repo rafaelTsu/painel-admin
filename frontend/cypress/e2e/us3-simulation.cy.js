@@ -42,6 +42,15 @@ describe('US3 Simulation Flow', () => {
     cy.intercept('GET', '/api/groups/g1/simulations/sim1', {
        body: { id: 'sim1', status: 'succeeded', outputFormat: 'docx' }
     }).as('simulationStatus');
+
+    // Intercept download request and stub a small PDF-like payload
+    cy.intercept('GET', '/api/groups/g1/simulations/sim1/download', (req) => {
+       req.reply({
+           statusCode: 200,
+           headers: { 'content-type': 'application/pdf' },
+           body: 'PDF-DUMMY-BYTES'
+       });
+    }).as('simulationDownload');
   });
 
   it('should run a simulation successfully', () => {
@@ -75,5 +84,8 @@ describe('US3 Simulation Flow', () => {
      
      // Check download button
      cy.contains('Download Result').should('be.visible');
+      // Trigger download and ensure request was made
+      cy.contains('Download Result').click();
+      cy.wait('@simulationDownload');
   });
 });

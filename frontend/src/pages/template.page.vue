@@ -133,6 +133,10 @@ const downloadExport = async (item) => {
         document.body.appendChild(link);
         link.click();
         link.remove();
+        // Revoke the object URL after allowing the download to start
+        setTimeout(() => {
+            try { window.URL.revokeObjectURL(url); } catch (e) { /* noop */ }
+        }, 5000);
     }
 };
 
