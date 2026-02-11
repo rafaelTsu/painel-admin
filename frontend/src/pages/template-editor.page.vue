@@ -40,7 +40,7 @@
                         <v-text-field v-model="editorChangeNote" label="Change Note for this version" density="compact"></v-text-field>
                         
                         <div style="height: 500px">
-                             <QuillEditor theme="snow" v-model:content="editorContent" contentType="html" toolbar="full" />
+                             <QuillEditor :key="editorKey" theme="snow" v-model:content="editorContent" contentType="html" toolbar="full" />
                         </div>
                      </v-card>
                 </v-window-item>
@@ -54,6 +54,23 @@
                     <v-text-field v-model="searchVar" density="compact" label="Search variables" prepend-inner-icon="mdi-magnify" hide-details class="mb-2"></v-text-field>
                     <div style="max-height: 600px; overflow-y: auto;">
                         <v-expansion-panels variant="accordion" multiple>
+                            <v-expansion-panel title="Document Logic">
+                                <v-expansion-panel-text>
+                                    <v-list density="compact" class="pa-0">
+                                        <v-list-item draggable="true" @dragstart="onDragStartLogic($event, 'if')" style="cursor: grab" class="pl-1 logic-block">
+                                            <template v-slot:prepend><v-icon icon="mdi-code-braces" size="small" class="text-blue ml-0 mr-2"></v-icon></template>
+                                            <v-list-item-title class="font-weight-bold text-body-2">IF Condition</v-list-item-title>
+                                            <v-list-item-subtitle class="text-caption text-blue">Insert conditional block</v-list-item-subtitle>
+                                        </v-list-item>
+                                        <v-list-item draggable="true" @dragstart="onDragStartLogic($event, 'ifelse')" style="cursor: grab" class="pl-1 logic-block">
+                                            <template v-slot:prepend><v-icon icon="mdi-code-braces" size="small" class="text-blue ml-0 mr-2"></v-icon></template>
+                                            <v-list-item-title class="font-weight-bold text-body-2">IF / ELSE Condition</v-list-item-title>
+                                            <v-list-item-subtitle class="text-caption text-blue">Insert conditional with fallback</v-list-item-subtitle>
+                                        </v-list-item>
+                                    </v-list>
+                                </v-expansion-panel-text>
+                            </v-expansion-panel>
+
                             <v-expansion-panel title="Variables" v-for="group in groupedVariables" :key="group.id" :value="group.id">
                                 <template v-slot:title>
                                     <span class="text-subtitle-2 font-weight-bold">{{ group.name }}</span>
@@ -94,6 +111,14 @@
   </v-container>
 </template>
 
+<style scoped>
+.logic-block {
+    background: #e3f2fd;
+    border-left: 4px solid #1976d2;
+    margin-bottom: 4px;
+    border-radius: 4px;
+}
+</style>
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -125,6 +150,7 @@ const tab = ref('upload');
 const editorContent = ref('');
 const editorChangeNote = ref('Edited in Web Editor');
 const savingEditor = ref(false);
+const editorKey = ref(0);
 
 const groupedVariables = computed(() => {
     const s = searchVar.value.toLowerCase();
@@ -177,6 +203,17 @@ const onDragStart = (evt, v) => {
      evt.dataTransfer.effectAllowed = 'copy';
 };
 
+const onDragStartLogic = (evt, type) => {
+    let text = '';
+    if (type === 'if') {
+        text = '{#condition} ... {/condition}';
+    } else if (type === 'ifelse') {
+        text = '{#condition} ... {/condition}{^condition} ... {/condition}';
+    }
+    evt.dataTransfer.setData('text/plain', text);
+    evt.dataTransfer.effectAllowed = 'copy';
+};
+
 onMounted(async () => {
     const { groupId, templateId } = route.params;
     await templateStore.fetchTemplate(groupId, templateId);
@@ -227,6 +264,7 @@ const loadIntoEditor = async (version) => {
     try {
         const res = await templateStore.getVersionHtml(groupId, templateId, version.id);
         editorContent.value = res.html; // API returns { html: "..." } directly (unwrapped by interceptor)
+        editorKey.value++;
         tab.value = 'editor';
     } catch (e) {
         console.error("Failed to load editor", e);
