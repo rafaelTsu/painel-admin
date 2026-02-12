@@ -34,16 +34,18 @@
 **Decision**: Use standard `docxtemplater` tag syntax with Angular expressions inside.
 
 **Pattern**:
-- **IF**: `{# condition } ... {/}`
-- **IF/ELSE**: `{# condition } ... {^} ... {/}` (Note: `^` is the standard inverted section tag, equivalent to "else" in mustache/docxtemplater).
+- **IF**: `{{# condition }} ... {{/}}`
+- **IF/ELSE**: `{{# condition }} ... {{/}}{{^ condition }} ... {{/}}`
+- **Note**: `docxtemplater` with `angular-expressions` does not support `{{^}}` as a generic "else" for expressions. The inverted section must explicitly repeat the expression or use a negation. Repeating the expression in the inverted block (e.g., `{{^ user.role == 'admin'}}`) is the standard pattern supported by the library to emulate else.
 
 **Example**:
 ```text
-{# role == 'admin' }
+{{# role == 'admin' }}
   ADMIN ONLY CONTENT
-{^}
+{{/}}
+{{^ role == 'admin' }}
   REGULAR USER CONTENT
-{/}
+{{/}}
 ```
 
 **Implementation Details**:

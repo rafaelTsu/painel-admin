@@ -25,16 +25,17 @@
 The logic is not stored as structured data but parsed at runtime during document generation.
 
 **Expression Structure**:
-- **Delimiters**: `{# ... }` (Start/If), `{^ ... }` (Else/Inverted), `{/}` (End)
+- **Delimiters**: `{{# ... }}` (Start/If), `{{^ ... }}` (Else/Inverted - must repeat condition for expressions), `{{/}}` (End)
 - **Operators**: `==`, `!=`, `>`, `<`, `>=`, `<=`, `&&`, `||`, `!`, `+`, `-`, `*`, `/`, `%`
 - **Literals**: `'string'`, `123`, `true`, `false`, `null`
 - **Variables**: `variableName`, `object.property`
 
 **Example**:
 ```text
-{# user.age >= 18 && user.status == 'active' }
+{{# user.age >= 18 && user.status == 'active' }}
   User is an adult active member.
-{^}
+{{/}}
+{{^ user.age >= 18 && user.status == 'active' }}
   User is a minor or inactive.
-{/}
+{{/}}
 ```

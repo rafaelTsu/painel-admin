@@ -12,7 +12,7 @@
 1.  Open a template in the **Web Editor**.
 2.  Drag an **IF Condition** block from the sidebar.
 3.  Drop it into the document content.
-4.  Edit the placeholder text `{#condition}` to your expression (e.g., `{#amount > 1000}`).
+4.  Edit the placeholder text `{{# condition }}` to your expression (e.g., `{{# amount > 1000 }}`).
 
 ### 2. Using Expressions
 
@@ -24,11 +24,12 @@ Expressions support standard JavaScript operators:
 
 **Example**:
 ```text
-{# user.role == 'admin' && user.active }
+{{# user.role == 'admin' && user.active }}
   Content for active admins.
-{^}
+{{/}}
+{{^ user.role == 'admin' && user.active }}
   Content for everyone else.
-{/}
+{{/}}
 ```
 
 ### 3. Testing Logic

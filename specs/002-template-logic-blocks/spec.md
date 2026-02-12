@@ -45,6 +45,7 @@ A user wants to show alternative content if a condition (or expression) is false
 - **Complex Expressions**: System must support standard comparison operators (`==`, `!=`, `>`, `<`, `>=`, `<=`) and logical operators (`&&`, `||`).
 - **Nested Conditions**: System must support nesting blocks.
 - **Invalid Syntax**: If an expression is malformed, the generation should gracefully fail or show an error marker.
+- **Inverted Section Syntax**: Docxtemplater requires explicit repetition of the condition in the inverted section `{{^ condition }}` when using expressions, unlike simple boolean flags. The system must support or enforce this pattern.
 
 ## Requirements *(mandatory)*
 
@@ -52,12 +53,13 @@ A user wants to show alternative content if a condition (or expression) is false
 
 - **FR-001**: The specific sidebar in the Web Editor MUST display a "Document Logic" section.
 - **FR-002**: The "Document Logic" section MUST contain draggable items for "IF Condition" and "IF / ELSE Condition".
-- **FR-003**: Dragging "IF Condition" MUST insert the conditional syntax `{#condition} ... {/condition}`.
-- **FR-004**: Dragging "IF / ELSE Condition" MUST insert the inverted section syntax `{#condition} ... {/condition}{^condition} ... {/condition}`.
+- **FR-003**: Dragging "IF Condition" MUST insert the conditional syntax `{{# condition }} ... {{/}}` (or similar valid delimiters).
+- **FR-004**: Dragging "IF / ELSE Condition" MUST insert the inverted section syntax `{{# condition }} ... {{/}}{{^ condition }} ... {{/}}` to support expression evaluation in docxtemplater.
 - **FR-005**: The editor MUST handle the drag-and-drop event and insert text at the specific cursor position or drop target.
 - **FR-006**: The generated template version MUST save the HTML/DOCX content including these tags.
 - **FR-007**: The backend generation service MUST support evaluating expressions (e.g., `var == 'value'`, `num > 10`) within the condition tags.
 - **FR-008**: The system MUST support standard comparison (`==`, `!=`, `>`, `<`, `>=`, `<=`) and logical (`&&`, `||`) operators in expressions.
+- **FR-009**: The backend MUST correctly extract variable names referenced within complex expressions (e.g., extracting `role` from `user.role == 'admin'`) for dependency tracking.
 
 ### Key Entities
 
