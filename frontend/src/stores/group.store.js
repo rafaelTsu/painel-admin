@@ -41,9 +41,16 @@ export const useGroupStore = defineStore('group', {
        this.loading = true;
        try {
          const response = await groupService.listMembers(groupId);
-         // Storing members in a transient state or mapping to groups? 
-         // For simplicity, let's keep a simplistic currentGroupMembers for the detail view
-         this.currentGroupMembers = response.data;
+         // Storing members in a transient state or mapping to groups?
+         // Backend may return either an array (direct) or an object { data: [...] }.
+         // Accept both shapes for resilience.
+         if (Array.isArray(response)) {
+           this.currentGroupMembers = response;
+         } else if (response && response.data) {
+           this.currentGroupMembers = response.data;
+         } else {
+           this.currentGroupMembers = [];
+         }
          return response;
        } catch (err) {
          this.error = err.message;
