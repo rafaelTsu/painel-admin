@@ -49,26 +49,67 @@ const extractVariablesFromDocxBuffer = (buffer) => {
         const text = docXml.replace(/<[^>]+>/g, '');
 
         // 2. Regex to match:
-        // {{ key }}
-        // { key }
-        // {#key}, {^key}, {/key}
-        // Match: 1 or 2 open braces, optional whitespace, CAPTURE MODIFIER (#, ^, /), optional whitespace, CAPTURE KEY, optional whitespace, 1 or 2 close braces
-        const regex = /\{{1,2}\s*([#^\/]?)\s*([a-zA-Z0-9_]+)\s*\}{1,2}/g;
+        // {{ key }} or { key }
+        // {# expression }, {^ expression }, {/ expression }
+        // Match anything inside {{ ... }} or { ... }
+        // The .+? needs to be aggressive enough but respect closing braces
+        // We look for:
+        // Start: { or {{
+        // Optional: #, ^, /
+        // Content: Anything lazy until...
+        // End: } or }}
+        const regex = /\{{1,2}\s*([#^\/]?)\s*(.+?)\s*\}{1,2}/g;
         
         const variables = new Map(); // key -> type ('text' or 'boolean')
+        const reserved = new Set(['true', 'false', 'null', 'undefined']);
+        
         let match;
         while ((match = regex.exec(text)) !== null) {
             const modifier = match[1];
-            const key = match[2];
+            const content = match[2];
 
-            // Filter out internal numeric/nonsense keys if any
-            if (key.length > 1) { 
-                if (!variables.has(key)) {
-                     variables.set(key, 'text');
+            // 1. Simple variable check (e.g. "name", "user_id")
+            if (/^[a-zA-Z0-9_]+$/.test(content)) {
+                if (!reserved.has(content) && content.length > 1) {
+                    if (!variables.has(content)) {
+                        variables.set(content, 'text');
+                    }
+                    if (modifier === '#' || modifier === '^') {
+                        variables.set(content, 'boolean');
+                    }
                 }
-                // If it is used as a section/condition, mark as boolean
-                if (modifier === '#' || modifier === '^') {
-                    variables.set(key, 'boolean');
+            } else {
+                // 2. Complex expression (e.g. "user.role == 'admin'")
+                
+                // Remove string literals first to avoid matching inside them
+                const cleanContent = content.replace(/'[^']*'/g, '').replace(/"[^"]*"/g, '');
+                
+                // Find identifiers:
+                // - Must start with letter or underscore
+                // - Can contain numbers
+                // - Must NOT be preceded by a dot (to avoid property access like .role)
+                // - Using simple regex here because lookbehind support varies in environments
+                
+                // Fallback approach without lookbehind for maximum compatibility:
+                // Match "word" boundaries, then filter those preceded by "." manually if needed, 
+                // but simpler regex often works for standard cases: \b[a-zA-Z_][a-zA-Z0-9_]*\b
+                const identifiers = cleanContent.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/g);
+                
+                if (identifiers) {
+                    identifiers.forEach((id, index) => {
+                         // Check if it is preceded by a dot in the original clean string
+                         // This is a naive check but robust enough for "user.role" vs "role"
+                         const idIndex = cleanContent.indexOf(id);
+                         if (idIndex > 0 && cleanContent[idIndex - 1] === '.') {
+                             return; // It's a property access
+                         }
+                         
+                        if (!reserved.has(id) && id.length > 1) {
+                            if (!variables.has(id)) {
+                                variables.set(id, 'text'); 
+                            }
+                        }
+                    });
                 }
             }
         }

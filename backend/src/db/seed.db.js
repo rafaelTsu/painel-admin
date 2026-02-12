@@ -20,6 +20,7 @@ const seed = async () => {
     const passwordHash = await hashPassword(password);
     
     await User.create({
+      name: 'Admin User',
       email,
       passwordHash,
       role: 'administrator',

@@ -1,0 +1,15 @@
+{
+  "templateId": "uuid-here",
+  "variables": {
+    "user": {
+      "role": "admin",
+      "age": 30,
+      "isActive": true
+    },
+    "order": {
+      "total": 150.50,
+      "status": "pending"
+    }
+  },
+  "format": "docx"
+}

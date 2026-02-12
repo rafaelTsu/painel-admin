@@ -1,6 +1,13 @@
 
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
+import expressions from 'angular-expressions';
+
+// Configure angular-expressions
+expressions.filters.upper = function(input) {
+    if(!input) return input;
+    return input.toUpperCase();
+};
 
 class DocxRenderService {
     /**
@@ -15,6 +22,28 @@ class DocxRenderService {
             paragraphLoop: true,
             linebreaks: true,
             delimiters: { start: '{{', end: '}}' },
+            parser: function(tag) {
+                if (tag === '.') {
+                    return {
+                        get: function(s){ return s;}
+                    };
+                }
+                const cleanTag = tag.replace(/(’|“|”)/g, "'");
+                try {
+                    const compiled = expressions.compile(cleanTag);
+                    return {
+                        get: function(scope, context) {
+                            return compiled(scope);
+                        }
+                    };
+                } catch (e) {
+                     return {
+                         get: function(scope) {
+                             return ""; 
+                         }
+                     };
+                }
+            },
             nullGetter: (part) => `[MISSING: ${part.value}]`
         });
 

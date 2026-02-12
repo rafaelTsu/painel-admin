@@ -31,4 +31,5 @@
 
 ## Notes
 
-- Spec ready for planning.
+- Spec updated to include expression support.
+- Ready for planning.

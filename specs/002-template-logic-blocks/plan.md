@@ -1,26 +1,38 @@
-# Implementation Plan: Template Logic Blocks
+# Implementation Plan: [FEATURE]
 
-**Branch**: `002-template-logic-blocks` | **Date**: 2026-02-11 | **Spec**: [specs/002-template-logic-blocks/spec.md](../spec.md)
-**Input**: Feature specification from `specs/002-template-logic-blocks/spec.md`
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+
+**Note**: This template is filled in by the `/speckit.plan` command. If command workflow docs are
+present in this repo, look for them under `.specify/templates/commands/`.
 
 ## Summary
 
-Empower users to add nested conditional logic (If, If/Else blocks) directly in the Docx Template Web Editor using a low-code drag-and-drop interface. This leverages the existing `docxtemplater` backend logic by inserting the correct syntax tags (`{#var}...{/var}` and `{#var}...{/}{^var}...{/}`) into the editor.
+[Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
 
-**Language/Version**: Node.js 20 (Backend), Vue 3 + Vite (Frontend)
-**Primary Dependencies**: `docxtemplater` (Backend), `vue-quill` (Frontend Editor)
-**Storage**: PostgreSQL (Template versions are stored as files, metadata in DB)
-**Testing**: Vitest (Unit), Cypress (E2E)
-**Target Platform**: Web Browser (Chrome/Firefox/Edge)
-**Project Type**: Web Application
-**Performance Goals**: Instant drag-and-drop feedback; Document generation < 2s.
-**Constraints**: Must use existing `docxtemplater` logic (no new backend template engine).
+**Language/Version**: Node.js >= 20.0.0, Vue 3.4+
+**Primary Dependencies**: 
+- Backend: Express, Sequelize, Docxtemplater
+- Frontend: Vuetify, @vueup/vue-quill, Pinia
+**Storage**: PostgreSQL 15
+**Testing**: Vitest (Unit/Integration), Cypress (E2E)
+**Target Platform**: Linux (Docker)
+**Project Type**: Web application
+**Performance Goals**: Document generation < 2s for standard templates
+**Constraints**: Must support conditional logic in both PDF and DOCX outputs (via docxtemplater)
+**Scale/Scope**: ~5 new components/services modifications
 
 ## Constitution Check
 
-*GATE: Passed.*
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+
+- [x] **Spec-Driven**: Feature is defined in `specs/002-template-logic-blocks/spec.md`.
+- [x] **Code Quality**: Logic will be encapsulated in `ExpressionParser` service.
+- [x] **Security**: Expression evaluation MUST be sandboxed (no `eval()`) to prevent RCE.
+- [x] **Performance**: Expression parsing must be efficient.
+- [x] **UX**: Drag-and-drop must integrate with existing Quill editor.
 
 ## Project Structure
 
@@ -29,53 +41,47 @@ Empower users to add nested conditional logic (If, If/Else blocks) directly in t
 ```text
 specs/002-template-logic-blocks/
 ├── plan.md              # This file
-├── research.md          # N/A (Low complexity, syntax confirmed)
-└── checklists/
-    └── requirements.md
+├── research.md          # Phase 0 output
+├── data-model.md        # Phase 1 output
+├── quickstart.md        # Phase 1 output
+├── contracts/           # Phase 1 output
+└── tasks.md             # Phase 2 output
 ```
 
-### Source Code
+### Source Code (repository root)
 
 ```text
 backend/
 ├── src/
-│   └── services/
-│       └── template.service.js  # Validation logic (if needed) and HTML<->DOCX conversion
+│   ├── services/
+│   │   └── docx-render.service.js  # Update to support expressions
+│   └── shared/
+│       └── expression-parser.util.js # New utility for safe parsing
+└── tests/
+    └── unit/
+        └── expression-parser.test.js
 
 frontend/
 ├── src/
-│   ├── pages/
-│   │   └── template-editor.page.vue # Main UI for Logic Blocks
-│   └── stores/
-│       └── template.store.js    # Data handling
+│   ├── components/
+│   │   ├── template-editor/
+│   │   │   ├── LogicSidebar.vue      # New component
+│   │   │   └── RichTextEditor.vue    # Update to handle drops
+│   │   └── ...
+│   └── pages/
+│       └── template-editor.page.vue  # Integration
+└── tests/
 ```
 
-## Implementation Phases
-
-### Phase 1: Frontend - UI Components
-
-**Goal**: Enable users to view and drag Logic Blocks into the editor.
-
-- [x] **Add "Document Logic" Section**: Update sidebar in `template-editor.page.vue` to list "IF Condition" and "IF / ELSE Condition".
-- [x] **Implement Drag Logic**: Add `dragstart` handlers to inject the correct raw text syntax.
-  - `IF`: `{#condition} ... {/condition}`
-  - `IF/ELSE`: `{#condition} ... {/condition}{^condition} ... {/condition}`
-- [ ] **Styles & Usability**: Ensure the draggable items are clearly distinguishable from variables.
-
-### Phase 2: Frontend - Editor Integration
-
-**Goal**: Ensure the generated tags are preserved and editable.
-
-- [x] **Quill Integration**: Verify `vue-quill` accepts the dropped text. (Confirmed via standard HTML5 DnD behavior).
-- [ ] **Validation (Optional)**: visual feedback if tags are malformed (Out of scope for simple changes, but good to keep in mind).
-
-### Phase 3: Verification & Testing
-
-**Goal**: Verify end-to-end functionality.
-
-- [ ] **Manual Test**: Drag blocks, rename 'condition' to variable, save, download/simulate.
-- [ ] **Data Integrity**: Verify generated DOCX contains valid XML tags for `docxtemplater`.
+**Structure Decision**: Standard "Frontend + Backend" structure, extending existing services and components.
 
 ## Complexity Tracking
 
-Low complexity. Feature primarily uses existing text-insertion capabilities of the editor and standard features of the backend template engine.
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+N/A
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |

@@ -1,7 +1,13 @@
 import dotenv from 'dotenv';
 import Joi from 'joi';
 
-dotenv.config();
+// Load env file based on NODE_ENV
+const nodeEnv = process.env.NODE_ENV || 'development';
+if (nodeEnv === 'test') {
+  dotenv.config({ path: '.env.test' });
+} else {
+  dotenv.config();
+}
 
 const schema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
@@ -10,7 +16,7 @@ const schema = Joi.object({
   JWT_ACCESS_SECRET: Joi.string().required(),
   JWT_REFRESH_SECRET: Joi.string().required(),
   FILES_BASE_PATH: Joi.string().required(),
-  CORS_ORIGIN: Joi.string().default('http://localhost:3000'),
+  CORS_ORIGIN: Joi.string().default('http://localhost:3000,http://localhost:5173'),
 }).unknown();
 
 const { error, value } = schema.validate(process.env, { abortEarly: false });

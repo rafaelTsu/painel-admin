@@ -1,5 +1,6 @@
 import * as authService from '../services/auth.service.js';
 import { loginSchema } from '../validations/auth.validator.js';
+import { env } from '../env.config.js';
 
 export const login = async (req, res, next) => {
   try {
@@ -9,8 +10,8 @@ export const login = async (req, res, next) => {
     // Set refresh token in httpOnly cookie
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: env.NODE_ENV === 'production',
+        sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
